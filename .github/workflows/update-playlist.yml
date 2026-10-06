@@ -1,0 +1,44 @@
+name: Actualizar playlist REAM
+
+on:
+  # Ejecutar cada día a las 04:00 UTC
+  schedule:
+    - cron: "0 4 * * *"
+  # Permitir ejecución manual desde la pestaña Actions
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generar el archivo .m3u
+        run: python scripts/update_playlist.py
+
+      - name: Comprobar si hay cambios
+        id: diff
+        run: |
+          if git diff --quiet retro_entre_amigos.m3u; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit y push si hay cambios
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add retro_entre_amigos.m3u
+          git commit -m "chore: actualizar playlist REAM ($(date -u +%Y-%m-%d))"
+          git push
