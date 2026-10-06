@@ -3,7 +3,7 @@ name: Actualizar playlist REAM
 on:
   # Ejecutar cada día a las 04:00 UTC
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "0 4 * * 1"
   # Permitir ejecución manual desde la pestaña Actions
   workflow_dispatch:
 
